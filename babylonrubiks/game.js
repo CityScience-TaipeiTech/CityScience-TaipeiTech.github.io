@@ -123,6 +123,9 @@ class Playground {
                 }
                 // calculate center point
                 this.centerPoint = this.cubes.reduce((total, cube) => total.addInPlace(cube.position), BABYLON.Vector3.Zero()).scale(1 / this.cubes.length);
+                var img_colors = ['B', 'G', 'R', 'T', 'W', 'Y'];
+                var cube_img_items  = ['01', '02', '03', '04', '05', '06', '07', '08', '09'];
+                var i = 0;
                 // create plane faces
                 [
                     { color: new BABYLON.Color3(255 / 255, 255 / 255, 255 / 255),
@@ -139,17 +142,28 @@ class Playground {
                         rotation: new BABYLON.Vector3(0, 0, 0), normal: new BABYLON.Vector3(0, 0, -1)
                     }
                 ].forEach(planeDetails => {
-                    const material = new BABYLON.StandardMaterial('', scene);
-                    material.ambientColor = planeDetails.color;
-                    material.disableLighting = true;
-                    this.materialToSidePlanes.set(material, []);
-                    const templatePlane = BABYLON.MeshBuilder.CreatePlane('', { size: 0.96 }, scene);
-                    templatePlane.material = material;
-                    templatePlane.parent = this.transformNode;
-                    templatePlane.isVisible = false;
+                    // const material = new BABYLON.StandardMaterial('', scene);
+                    // material.diffuseTexture = new BABYLON.Texture('textures/rubiks/B01.jpg', scene);
+                    // // material.diffuseTexture = new BABYLON.Texture(file_name, scene);
+                    // material.ambientColor = new BABYLON.Color3(1, 1, 1);
+                    // material.disableLighting = true;
+                    // this.materialToSidePlanes.set(material, []);
+                    // const templatePlane = BABYLON.MeshBuilder.CreatePlane('', { size: 0.96 }, scene);
+                    // templatePlane.material = material;
+                    // templatePlane.parent = this.transformNode;
+                    // templatePlane.isVisible = false;
+                    var j = 0;
                     this.cubes
                         .filter(cube => !this.cubes.some(ocube => ocube.position.equals(cube.position.add(planeDetails.normal))))
                         .forEach(cube => {
+                        const templatePlane = BABYLON.MeshBuilder.CreatePlane('', { size: 0.96 }, scene);
+                        const cube_material = new BABYLON.StandardMaterial('', scene);
+                        var file_name = 'textures/rubiks/'+img_colors[i]+cube_img_items[j]+'.jpg';
+                        console.log(file_name)
+                        cube_material.diffuseTexture = new BABYLON.Texture(file_name, scene);
+                        cube_material.ambientColor = new BABYLON.Color3(1, 1, 1);
+                        templatePlane.material = cube_material;
+                        this.materialToSidePlanes.set(cube_material, []);
                         const planeMesh = templatePlane.createInstance('');
                         planeMesh.isVisible = true;
                         planeMesh.isPickable = true;
@@ -157,8 +171,10 @@ class Playground {
                         planeMesh.position = planeDetails.normal.scale(0.501).clone();
                         planeMesh.rotation = planeDetails.rotation.clone();
                         this.sidePlaneToCubeMesh.set(planeMesh, cube);
-                        this.materialToSidePlanes.get(material).push(planeMesh);
+                        this.materialToSidePlanes.get(cube_material).push(planeMesh);
+                        j += 1;
                     });
+                    i += 1;
                 });
                 camera.setTarget(this.centerPoint);
             }
@@ -242,7 +258,7 @@ class Playground {
                         clearInterval(this.randomRotationUpdateHandle);
                         this.randomRotationUpdateHandle = null;
                         this.enabled = true;
-                        this.shuffling = false;
+                        this.shuffling = true;
                         this.startTime = new Date();
                         this.timeUpdateHandle = setInterval(() => {
                             this.setTime((new Date()).getTime() - this.startTime.getTime());
@@ -365,7 +381,7 @@ class Playground {
                 gameOverText.shadowOffsetY = 5;
                 gameOverText.resizeToFit = true;
                 gameOverText.zIndex = 1;
-                gameContainer.addControl(gameOverText);
+                // gameContainer.addControl(gameOverText);
                 onRubiksCreate.add((rubiksCube) => rubiksCube.onGameEnd.add(() => gameOverText.isVisible = true));
                 onRubiksCreate.add((rubiksCube) => rubiksCube.onCreate.add(() => gameOverText.isVisible = false));
                 const resetButton = BABYLON.GUI.Button.CreateSimpleButton("shuffleButton", "NEW GAME");
@@ -380,7 +396,7 @@ class Playground {
                     gameContainer.isVisible = false;
                     optionsContainer.isVisible = true;
                 });
-                gameContainer.addControl(resetButton);
+                // gameContainer.addControl(resetButton);
                 const helpButton = BABYLON.GUI.Button.CreateSimpleButton("shuffleButton", "?");
                 helpButton.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_BOTTOM;
                 helpButton.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_RIGHT;
@@ -394,7 +410,7 @@ class Playground {
                     gameContainer.isVisible = false;
                     helpContainer.isVisible = true;
                 });
-                gameContainer.addControl(helpButton);
+                // gameContainer.addControl(helpButton);
                 const bottomText = new BABYLON.GUI.TextBlock('');
                 bottomText.resizeToFit = true;
                 bottomText.text = 'Drag across tiles to move';
@@ -402,7 +418,7 @@ class Playground {
                 bottomText.fontSize = '40px';
                 bottomText.color = 'white';
                 bottomText.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_TOP;
-                gameContainer.addControl(bottomText);
+                // gameContainer.addControl(bottomText);
                 onRubiksCreate.add((rubiksCube) => rubiksCube.onMoveMade.add((count) => { if (count != 0)
                     bottomText.isVisible = false; }));
                 const statsPanel = new BABYLON.GUI.Container('');
@@ -411,12 +427,12 @@ class Playground {
                 statsPanel.width = '600px';
                 statsPanel.height = '90px';
                 statsPanel.top = '20px';
-                gameContainer.addControl(statsPanel);
+                // gameContainer.addControl(statsPanel);
                 const movesSection = new BABYLON.GUI.Container('');
                 movesSection.width = '200px';
                 movesSection.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
                 movesSection.paddingLeft = '20px';
-                statsPanel.addControl(movesSection);
+                // statsPanel.addControl(movesSection);
                 const movesLabelText = GUI.createStandardTextBlock();
                 movesLabelText.top = '0px';
                 movesLabelText.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_TOP;
@@ -610,7 +626,7 @@ Have fun!
                         const iconContainer = new BABYLON.GUI.Container('');
                         iconContainer.hoverCursor = "pointer";
                         iconContainer.isPointerBlocker = true;
-                        gameContainer.addControl(iconContainer);
+                        // gameContainer.addControl(iconContainer);
                         this.container = iconContainer;
                         const iconImage = new BABYLON.GUI.Image('', imageUrl);
                         iconImage.width = SocialMediaIcon.DEFAULT_SCALAR;
@@ -635,17 +651,17 @@ Have fun!
                     getContainer() { return this.container; }
                 }
                 SocialMediaIcon.DEFAULT_SCALAR = 0.9;
-                const twitterIcon = new SocialMediaIcon('icons/twitter.svg', 'https://twitter.com/blindinghues');
-                twitterIcon.getContainer().width = '75px';
-                twitterIcon.getContainer().height = '75px';
-                twitterIcon.getContainer().top = '-80px';
-                twitterIcon.getContainer().verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_BOTTOM;
-                twitterIcon.getContainer().horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
-                const githubIcon = new SocialMediaIcon('icons/github.svg', 'https://github.com/blindinghues');
-                githubIcon.getContainer().width = '75px';
-                githubIcon.getContainer().height = '75px';
-                githubIcon.getContainer().verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_BOTTOM;
-                githubIcon.getContainer().horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
+                // const twitterIcon = new SocialMediaIcon('icons/twitter.svg', 'https://twitter.com/blindinghues');
+                // twitterIcon.getContainer().width = '75px';
+                // twitterIcon.getContainer().height = '75px';
+                // twitterIcon.getContainer().top = '-80px';
+                // twitterIcon.getContainer().verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_BOTTOM;
+                // twitterIcon.getContainer().horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
+                // const githubIcon = new SocialMediaIcon('icons/github.svg', 'https://github.com/blindinghues');
+                // githubIcon.getContainer().width = '75px';
+                // githubIcon.getContainer().height = '75px';
+                // githubIcon.getContainer().verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_BOTTOM;
+                // githubIcon.getContainer().horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
             }
             static createStandardTextBlock() {
                 const textBlock = new BABYLON.GUI.TextBlock('');
@@ -688,7 +704,7 @@ Have fun!
             GUI.loadResources()
         ]).then(() => {
             gui.populateGUI();
-            rubiksCube = new RubiksCube({ width: 3, shuffleCount: 40 });
+            rubiksCube = new RubiksCube({ width: 3, shuffleCount: 1 });
             onRubiksCreate.notifyObservers(rubiksCube);
             rubiksCube.initEvents();
             rubiksCube.shuffle();
